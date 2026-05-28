@@ -103,9 +103,18 @@ function shortText(value: string, fallback = '--'): string {
 export default function SubPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [qrOpen, setQrOpen] = useState(false);
+  const [qrValue, setQrValue] = useState('');
+  const [qrTitle, setQrTitle] = useState('Subscription QR Code');
   const [isDark, setIsDark] = useState(true);
 
   const mainLink = useMemo(() => getMainLink(), []);
+  const configLinks = useMemo(() => {
+  if (links.length > 0) return links;
+
+  const fallbackLinks = [subUrl, subJsonUrl, subClashUrl].filter(Boolean);
+
+  return fallbackLinks;
+}, []);
   const usagePercent = useMemo(() => getUsagePercent(), []);
   const remainingText = useMemo(() => {
     if (totalByte <= 0) return '∞';
@@ -131,6 +140,19 @@ export default function SubPage() {
       } else {
         messageApi.error('Copy failed');
       }
+    },
+    [messageApi],
+  );
+    const openQr = useCallback(
+    (value: string, title = 'Subscription QR Code') => {
+      if (!value) {
+        messageApi.warning('No link available');
+        return;
+      }
+
+      setQrValue(value);
+      setQrTitle(title);
+      setQrOpen(true);
     },
     [messageApi],
   );
@@ -346,19 +368,44 @@ export default function SubPage() {
               <span>SUBSCRIPTION ID</span>
             </div>
 
-            <div className="lunex-link-top">
-              <strong>{clientEmail}</strong>
-              <button type="button" onClick={() => copy(mainLink, 'Link copied')}>
-                <CopyOutlined />
-                Copy
-              </button>
-            </div>
+<div className="lunex-link-top">
+  <strong>{clientEmail}</strong>
+  <button type="button" onClick={() => copy(subUrl || mainLink, 'Subscription copied')}>
+    <CopyOutlined />
+    Copy Sub
+  </button>
+</div>
 
-            <pre className="lunex-link-box" onClick={() => copy(mainLink, 'Link copied')}>
-              {shortText(mainLink)}
-            </pre>
+<div className="lunex-config-list">
+  {configLinks.length > 0 ? (
+    configLinks.map((link, index) => (
+      <div className="lunex-config-item" key={`${link}-${index}`}>
+        <div className="lunex-config-head">
+          <strong>Config #{index + 1}</strong>
+
+          <div>
+            <button type="button" onClick={() => copy(link, `Config #${index + 1} copied`)}>
+              <CopyOutlined />
+              Copy
+            </button>
+
+            <button type="button" onClick={() => openQr(link, `Config #${index + 1} QR Code`)}>
+              <QrcodeOutlined />
+              QR
+            </button>
           </div>
+        </div>
 
+        <pre className="lunex-link-box" onClick={() => copy(link, `Config #${index + 1} copied`)}>
+          {shortText(link)}
+        </pre>
+      </div>
+    ))
+  ) : (
+    <pre className="lunex-link-box">No config available</pre>
+  )}
+</div>
+            
           <div className="lunex-card lunex-connect-card">
             <div className="lunex-section-title">
               <ShareAltOutlined />
@@ -397,7 +444,7 @@ export default function SubPage() {
           </div>
         </div>
 
-        <button type="button" onClick={() => setQrOpen(true)}>
+        <button type="button" onClick={() => openQr(subUrl || mainLink, 'Subscription QR Code')}>
           <QrcodeOutlined />
           Show QR Code
         </button>
@@ -426,21 +473,21 @@ export default function SubPage() {
       </footer>
 
       <Modal
-        title="Subscription QR Code"
-        open={qrOpen}
-        onCancel={() => setQrOpen(false)}
-        footer={null}
-        centered
-        className="lunex-qr-modal"
-      >
-        <div className="lunex-qr-wrap">
-          <QRCode value={mainLink || subUrl || sId || 'empty'} size={260} />
-          <button type="button" onClick={() => copy(mainLink || subUrl, 'QR link copied')}>
-            <CopyOutlined />
-            Copy Link
-          </button>
-        </div>
-      </Modal>
+  title={qrTitle}
+  open={qrOpen}
+  onCancel={() => setQrOpen(false)}
+  footer={null}
+  centered
+  className="lunex-qr-modal"
+>
+  <div className="lunex-qr-wrap">
+    <QRCode value={qrValue || subUrl || mainLink || sId || 'empty'} size={260} />
+    <button type="button" onClick={() => copy(qrValue || subUrl || mainLink, 'QR link copied')}>
+      <CopyOutlined />
+      Copy Link
+    </button>
+  </div>
+</Modal>
     </main>
   );
 }
