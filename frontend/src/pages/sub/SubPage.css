@@ -276,11 +276,11 @@ body,
 .lunex-stat-box {
   position: relative;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 74px minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
-  min-height: 92px;
-  padding: 16px 18px;
+  gap: 16px;
+  min-height: 112px;
+  padding: 18px 20px;
   border: 1px solid rgba(139, 75, 255, 0.32);
   border-radius: 14px;
   background: rgba(18, 15, 42, 0.66);
@@ -289,8 +289,13 @@ body,
 .lunex-stat-icon {
   display: grid;
   place-items: center;
-  font-size: 34px;
-  color: #9f5cff;
+  width: 66px;
+  height: 66px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(159, 92, 255, 0.22), rgba(54, 169, 244, 0.1));
+  color: #b781ff;
+  font-size: 46px;
+  filter: drop-shadow(0 0 14px rgba(159, 92, 255, 0.45));
 }
 
 .lunex-stat-box span {
@@ -502,7 +507,7 @@ body,
 }
 
 .lunex-os-btn .android {
-  color: #c6ff50;
+  color: #e8e5f4;
 }
 
 .lunex-os-btn .apple {
