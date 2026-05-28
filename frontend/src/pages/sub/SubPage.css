@@ -727,3 +727,59 @@ body,
     width: 100%;
   }
 }
+.lunex-config-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 0;
+}
+
+.lunex-config-item {
+  overflow: hidden;
+  border: 1px solid rgba(139, 75, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(9, 8, 25, 0.42);
+}
+
+.lunex-config-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(139, 75, 255, 0.22);
+  background: rgba(20, 17, 44, 0.62);
+}
+
+.lunex-config-head strong {
+  color: #d8ccff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+}
+
+.lunex-config-head div {
+  display: flex;
+  gap: 8px;
+}
+
+.lunex-config-head button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(174, 101, 255, 0.54);
+  border-radius: 10px;
+  background: rgba(54, 31, 98, 0.74);
+  color: #d9ccff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.lunex-config-item .lunex-link-box {
+  border: 0;
+  border-radius: 0;
+  min-height: 84px;
+  max-height: 130px;
+}
