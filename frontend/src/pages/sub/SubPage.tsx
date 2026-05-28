@@ -368,44 +368,45 @@ export default function SubPage() {
               <span>SUBSCRIPTION ID</span>
             </div>
 
-<div className="lunex-link-top">
-  <strong>{clientEmail}</strong>
-  <button type="button" onClick={() => copy(subUrl || mainLink, 'Subscription copied')}>
-    <CopyOutlined />
-    Copy Sub
-  </button>
-</div>
+            <div className="lunex-link-top">
+              <strong>{clientEmail}</strong>
+              <button type="button" onClick={() => copy(subUrl || mainLink, 'Subscription copied')}>
+                <CopyOutlined />
+                Copy Sub
+              </button>
+            </div>
 
-<div className="lunex-config-list">
-  {configLinks.length > 0 ? (
-    configLinks.map((link, index) => (
-      <div className="lunex-config-item" key={`${link}-${index}`}>
-        <div className="lunex-config-head">
-          <strong>Config #{index + 1}</strong>
+            <div className="lunex-config-list">
+              {configLinks.length > 0 ? (
+                configLinks.map((link, index) => (
+                  <div className="lunex-config-item" key={`${link}-${index}`}>
+                    <div className="lunex-config-head">
+                      <strong>Config #{index + 1}</strong>
 
-          <div>
-            <button type="button" onClick={() => copy(link, `Config #${index + 1} copied`)}>
-              <CopyOutlined />
-              Copy
-            </button>
+                      <div>
+                        <button type="button" onClick={() => copy(link, `Config #${index + 1} copied`)}>
+                          <CopyOutlined />
+                          Copy
+                        </button>
 
-            <button type="button" onClick={() => openQr(link, `Config #${index + 1} QR Code`)}>
-              <QrcodeOutlined />
-              QR
-            </button>
+                        <button type="button" onClick={() => openQr(link, `Config #${index + 1} QR Code`)}>
+                          <QrcodeOutlined />
+                          QR
+                        </button>
+                      </div>
+                    </div>
+
+                    <pre className="lunex-link-box" onClick={() => copy(link, `Config #${index + 1} copied`)}>
+                      {shortText(link)}
+                    </pre>
+                  </div>
+                ))
+              ) : (
+                <pre className="lunex-link-box">No config available</pre>
+              )}
+            </div>
           </div>
-        </div>
 
-        <pre className="lunex-link-box" onClick={() => copy(link, `Config #${index + 1} copied`)}>
-          {shortText(link)}
-        </pre>
-      </div>
-    ))
-  ) : (
-    <pre className="lunex-link-box">No config available</pre>
-  )}
-</div>
-            
           <div className="lunex-card lunex-connect-card">
             <div className="lunex-section-title">
               <ShareAltOutlined />
@@ -432,7 +433,7 @@ export default function SubPage() {
           </div>
         </div>
       </section>
-
+      
       <section className="lunex-wide-card">
         <div className="lunex-wide-left">
           <div className="lunex-wide-icon">
