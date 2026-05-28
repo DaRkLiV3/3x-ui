@@ -462,7 +462,7 @@ export default function SubPage() {
           </div>
         </div>
 
-        <button type="button" onClick={() => openUrl(`https://t.me/${lunexsup}`)}>
+        <button type="button" onClick={() => openUrl(`https://t.me/lunexsup`)}>
           <SendOutlined />
           Message Me
         </button>
