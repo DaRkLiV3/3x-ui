@@ -9,6 +9,7 @@ import {
   FolderOpenOutlined,
   LineChartOutlined,
   LinkOutlined,
+  Modal,
   MoonFilled,
   PieChartOutlined,
   QrcodeOutlined,
@@ -18,7 +19,8 @@ import {
   UpOutlined,
   DownOutlined,
 } from '@ant-design/icons';
-import { Dropdown, MenuProps, Modal, QRCode, message } from 'antd';
+import { Dropdown, Modal, QRCode, message } from 'antd';
+import type { MenuProps } from 'antd/es/menu';
 
 import { ClipboardManager } from '@/utils';
 
