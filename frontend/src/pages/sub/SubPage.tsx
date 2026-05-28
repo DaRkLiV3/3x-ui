@@ -49,7 +49,14 @@ const subJsonUrl = subData.subJsonUrl || '';
 const subClashUrl = subData.subClashUrl || '';
 const subTitle = subData.subTitle || '';
 const links: string[] = Array.isArray(subData.links) ? subData.links : [];
-
+const clientEmail =
+  subData.email ||
+  subData.clientEmail ||
+  subData.remark ||
+  subData.name ||
+  subTitle ||
+  sId ||
+  'Client';
 const telegramUsername = 'YourTelegramID';
 const brandName = 'LunexV2';
 
@@ -340,7 +347,7 @@ export default function SubPage() {
             </div>
 
             <div className="lunex-link-top">
-              <strong>OUT-SEALED</strong>
+              <strong>{clientEmail}</strong>
               <button type="button" onClick={() => copy(mainLink, 'Link copied')}>
                 <CopyOutlined />
                 Copy
