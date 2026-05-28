@@ -51,19 +51,49 @@ body,
     sans-serif;
 }
 
-.lunex-stars,
-.lunex-stars::before,
-.lunex-stars::after {
+.lunex-stars {
   position: absolute;
   inset: 0;
-  content: "";
+  overflow: hidden;
   pointer-events: none;
+  opacity: 0.85;
   background-image:
-    radial-gradient(circle, rgba(178, 141, 255, 0.72) 0 1.4px, transparent 1.6px),
-    radial-gradient(circle, rgba(178, 141, 255, 0.45) 0 1px, transparent 1.2px);
-  background-size: 210px 210px, 330px 330px;
-  background-position: 18px 40px, 90px 120px;
-  opacity: 0.55;
+    radial-gradient(circle, rgba(178, 141, 255, 0.78) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle, rgba(178, 141, 255, 0.38) 0 0.95px, transparent 1.35px);
+  background-repeat: repeat;
+  background-size: 220px 220px, 360px 360px;
+  background-position: 30px 110vh, 130px 140vh;
+  animation: lunexStarsRiseA 150s linear infinite;
+  will-change: background-position;
+}
+
+.lunex-stars::before,
+.lunex-stars::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+  will-change: background-position;
+}
+
+.lunex-stars::before {
+  opacity: 0.42;
+  background-image:
+    radial-gradient(circle, rgba(123, 201, 255, 0.42) 0 1.05px, transparent 1.45px),
+    radial-gradient(circle, rgba(212, 170, 255, 0.34) 0 1.15px, transparent 1.55px);
+  background-size: 280px 280px, 430px 430px;
+  background-position: 90px 125vh, 15px 155vh;
+  animation: lunexStarsRiseB 185s linear infinite;
+}
+
+.lunex-stars::after {
+  opacity: 0.24;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.75) 0 1.35px, transparent 1.85px);
+  background-size: 520px 520px;
+  background-position: 180px 135vh;
+  animation: lunexStarsRiseC 230s linear infinite;
 }
 
 .lunex-theme-btn {
@@ -102,31 +132,78 @@ body,
 }
 
 .lunex-shield-orb {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 142px;
-  height: 142px;
-  margin-bottom: 14px;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 16px;
   border-radius: 999px;
-  background:
-    radial-gradient(circle, rgba(126, 60, 255, 0.55), rgba(126, 60, 255, 0.12) 42%, transparent 68%),
-    rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   box-shadow:
-    0 0 54px rgba(126, 60, 255, 0.72),
-    inset 0 0 26px rgba(255, 255, 255, 0.1);
+    0 0 56px rgba(126, 60, 255, 0.34),
+    inset 0 0 30px rgba(255, 255, 255, 0.07);
 }
 
+.lunex-shield-orb::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(169, 88, 255, 0.46),
+    rgba(54, 169, 244, 0.16),
+    rgba(169, 88, 255, 0.42),
+    rgba(255, 255, 255, 0.06)
+  );
+  opacity: 0.9;
+  filter: blur(1px);
+  animation: lunexOrbSpin 18s linear infinite;
+  z-index: 0;
+}
+
+.lunex-shield-orb::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.08) 34%, rgba(108, 55, 255, 0.18) 60%, rgba(21, 156, 232, 0.08) 80%, transparent 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.08);
+  animation: lunexOrbSpinReverse 28s linear infinite;
+  z-index: 1;
+}
 .lunex-shield {
+  position: relative;
+  z-index: 2;
   display: grid;
   place-items: center;
-  width: 84px;
-  height: 84px;
+  width: 82px;
+  height: 82px;
   border-radius: 999px;
-  background: linear-gradient(145deg, #6e32ff, #3916b4);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 0 36px rgba(140, 83, 255, 0.82);
+  background: linear-gradient(145deg, rgba(110, 50, 255, 0.95), rgba(57, 22, 180, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 0 34px rgba(140, 83, 255, 0.55),
+    inset 0 0 18px rgba(255, 255, 255, 0.08);
   font-size: 34px;
   color: #ffffff;
+  animation: lunexShieldFloat 5.5s ease-in-out infinite;
+}
+
+.lunex-shield svg {
+  position: relative;
+  z-index: 2;
 }
 
 .lunex-hero h1 {
@@ -717,6 +794,66 @@ body,
   font-weight: 900;
   cursor: pointer;
 }
+@keyframes lunexStarsRiseA {
+  from {
+    background-position: 30px 110vh, 130px 140vh;
+  }
+  to {
+    background-position: 30px -110vh, 130px -140vh;
+  }
+}
+
+@keyframes lunexStarsRiseB {
+  from {
+    background-position: 90px 125vh, 15px 155vh;
+  }
+  to {
+    background-position: 90px -125vh, 15px -155vh;
+  }
+}
+
+@keyframes lunexStarsRiseC {
+  from {
+    background-position: 180px 135vh;
+  }
+  to {
+    background-position: 180px -135vh;
+  }
+}
+
+@keyframes lunexOrbSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lunexOrbSpinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes lunexShieldFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 34px rgba(140, 83, 255, 0.55),
+      inset 0 0 18px rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow:
+      0 0 42px rgba(140, 83, 255, 0.7),
+      inset 0 0 20px rgba(255, 255, 255, 0.12);
+  }
+}
 
 @media (max-width: 980px) {
   .lunex-layout {
@@ -752,13 +889,14 @@ body,
   }
 
   .lunex-shield-orb {
-    width: 110px;
-    height: 110px;
+    width: 120px;
+    height: 120px;
   }
 
-  .lunex-shield {
+ .lunex-shield {
     width: 68px;
     height: 68px;
+    font-size: 28px;
   }
 
   .lunex-card {
