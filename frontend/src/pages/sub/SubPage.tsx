@@ -9,7 +9,6 @@ import {
   FolderOpenOutlined,
   LineChartOutlined,
   LinkOutlined,
-  Modal,
   MoonFilled,
   PieChartOutlined,
   QrcodeOutlined,
