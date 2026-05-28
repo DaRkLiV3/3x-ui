@@ -410,11 +410,11 @@ export default function SubPage() {
           </div>
           <div>
             <h3>Contact on Telegram</h3>
-            <p>Need help? Contact us</p>
+            <p>Need help? Contact LUNEX</p>
           </div>
         </div>
 
-        <button type="button" onClick={() => openUrl(`https://t.me/${telegramUsername}`)}>
+        <button type="button" onClick={() => openUrl(`https://t.me/${lunexsup}`)}>
           <SendOutlined />
           Message Me
         </button>
