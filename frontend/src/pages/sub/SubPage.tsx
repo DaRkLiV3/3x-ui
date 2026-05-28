@@ -261,7 +261,7 @@ export default function SubPage() {
         <div className="lunex-card lunex-plan-card">
           <div className="lunex-section-title">
             <CrownFilled />
-            <span>PLAN</span>
+            <span>Lunex PLAN</span>
           </div>
 
           <div className="lunex-plan-box">
