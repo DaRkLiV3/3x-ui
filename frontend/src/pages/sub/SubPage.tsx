@@ -1,561 +1,438 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
-  Button,
-  Card,
-  Col,
-  ConfigProvider,
-  Descriptions,
-  Divider,
-  Dropdown,
-  Layout,
-  Menu,
-  message,
-  Popover,
-  QRCode,
-  Row,
-  Space,
-  Tag,
-  Tooltip,
-} from 'antd';
-import {
-  AndroidOutlined,
-  AppleOutlined,
+  AndroidFilled,
+  AppleFilled,
+  CalendarOutlined,
+  ClockCircleOutlined,
   CopyOutlined,
-  DownOutlined,
+  CrownFilled,
+  FolderOpenOutlined,
+  LineChartOutlined,
+  LinkOutlined,
   MoonFilled,
-  MoonOutlined,
+  PieChartOutlined,
   QrcodeOutlined,
-  SunOutlined,
-  TranslationOutlined,
+  SendOutlined,
+  ShareAltOutlined,
+  ThunderboltFilled,
+  UpOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
+import { Dropdown, MenuProps, Modal, QRCode, message } from 'antd';
 
-import { ClipboardManager, IntlUtil, LanguageManager } from '@/utils';
-import { setMessageInstance } from '@/utils/messageBus';
-import { pauseAnimationsUntilLeave, useTheme } from '@/hooks/useTheme';
-import SubUsageSummary from './SubUsageSummary';
+import { ClipboardManager } from '@/utils';
+
 import './SubPage.css';
-
-const QR_SIZE = 240;
 
 const subData = window.__SUB_PAGE_DATA__ || {};
 
 const sId = subData.sId || '';
 const enabled = !!subData.enabled;
-const download = subData.download || '0';
-const upload = subData.upload || '0';
+
+const download = subData.download || '0 B';
+const upload = subData.upload || '0 B';
 const total = subData.total || '∞';
-const used = subData.used || '0';
+const used = subData.used || '0 B';
 const remained = subData.remained || '';
+
 const totalByte = Number(subData.totalByte || 0);
+const downloadByte = Number(subData.downloadByte || 0);
+const uploadByte = Number(subData.uploadByte || 0);
+const usedByte = Number(subData.usedByte || downloadByte + uploadByte || 0);
+
 const expireMs = Number(subData.expire || 0) * 1000;
 const lastOnlineMs = Number(subData.lastOnline || 0);
+
 const subUrl = subData.subUrl || '';
 const subJsonUrl = subData.subJsonUrl || '';
 const subClashUrl = subData.subClashUrl || '';
 const subTitle = subData.subTitle || '';
 const links: string[] = Array.isArray(subData.links) ? subData.links : [];
-const linkEmails: string[] = Array.isArray(subData.emails) ? subData.emails : [];
-const datepicker = subData.datepicker || 'gregorian';
 
-const isUnlimited = totalByte <= 0 && expireMs === 0;
-const isActive = (() => {
-  if (!enabled) return false;
-  if (totalByte > 0) {
-    const usedByteCalc = Number(subData.usedByte || 0)
-      || (Number(subData.downloadByte || 0) + Number(subData.uploadByte || 0));
-    if (usedByteCalc >= totalByte) return false;
+const telegramUsername = 'YourTelegramID';
+const brandName = 'LunexV2';
+
+function formatDate(ms: number): string {
+  if (!ms || ms <= 0) return '--';
+
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    }).format(new Date(ms));
+  } catch {
+    return '--';
   }
-  if (expireMs > 0 && Date.now() >= expireMs) return false;
-  return true;
-})();
-
-const PROTOCOL_COLORS: Record<string, string> = {
-  VLESS: 'blue',
-  VMESS: 'geekblue',
-  TROJAN: 'volcano',
-  SS: 'magenta',
-  HYSTERIA: 'cyan',
-  HY2: 'green',
-};
-
-// Same idea as ClientInfoModal.trimEmail — strip the client email
-// suffix from the remark so the row title isn't ugly twice.
-function trimEmail(remark: string, email: string): string {
-  if (!email) return remark;
-  const e = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return remark
-    .replace(new RegExp(`[-_.\\s|]+${e}$`), '')
-    .replace(new RegExp(`^${e}[-_.\\s|]+`), '')
-    .trim();
 }
 
-// Post-quantum keys blow up the encoded URL past what a single QR can
-// hold. The algorithm names don't appear as plain text in the URL —
-// they ride inside query params: mldsa65Verify → `pqv=<base64>`,
-// ML-KEM-768 → `encryption=mlkem768x25519plus.<...>`. The literal
-// substrings are also matched in case a config (e.g. wireguard) embeds
-// them directly.
-function isPostQuantumLink(link: string): boolean {
-  if (/[?&]pqv=/.test(link)) return true;
-  if (link.includes('mlkem768') || link.includes('mldsa65')) return true;
-  if (link.includes('ML-KEM-768')) return true;
-  return false;
+function getMainLink(): string {
+  if (links.length > 0) return links[0];
+  if (subUrl) return subUrl;
+  if (subJsonUrl) return subJsonUrl;
+  if (subClashUrl) return subClashUrl;
+  return '';
 }
 
-// Decode a base64 string as UTF-8. atob() returns a binary string where
-// each char holds one raw byte (Latin-1 interpretation), which mangles
-// any multi-byte UTF-8 sequence in the payload — most commonly the
-// emoji decorations the panel embeds in remarks (📊, ⏳).
-function base64DecodeUtf8(b64: string): string {
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new TextDecoder('utf-8').decode(bytes);
+function getStatusText(): string {
+  if (!enabled) return 'Disabled';
+  if (totalByte <= 0 && expireMs === 0) return 'Unlimited';
+  return 'Active';
 }
 
-function parseLinkMeta(link: string, idx: number): { protocol: string; remark: string } {
-  const fallback = `Link ${idx + 1}`;
-  if (!link) return { protocol: 'LINK', remark: fallback };
-  const schemeMatch = /^([a-z0-9]+):\/\//i.exec(link);
-  const scheme = schemeMatch?.[1]?.toLowerCase() ?? '';
-  const protocolMap: Record<string, string> = {
-    vless: 'VLESS',
-    vmess: 'VMESS',
-    trojan: 'TROJAN',
-    ss: 'SS',
-    hysteria: 'HYSTERIA',
-    hysteria2: 'HY2',
-    hy2: 'HY2',
-  };
-  const protocol = protocolMap[scheme] ?? scheme.toUpperCase() ?? 'LINK';
+function getUsagePercent(): number {
+  if (!totalByte || totalByte <= 0) return 0;
 
-  let remark = '';
-  if (scheme === 'vmess') {
-    try {
-      const body = link.slice('vmess://'.length).split('#')[0];
-      const json = JSON.parse(base64DecodeUtf8(body)) as { ps?: unknown };
-      if (typeof json?.ps === 'string') remark = json.ps;
-    } catch { /* fall through */ }
-  }
-  if (!remark) {
-    const hashIdx = link.indexOf('#');
-    if (hashIdx >= 0 && hashIdx + 1 < link.length) {
-      const raw = link.slice(hashIdx + 1);
-      try { remark = decodeURIComponent(raw); }
-      catch { remark = raw; }
-    }
-  }
-  return { protocol, remark: remark || fallback };
+  const percent = Math.round((usedByte / totalByte) * 100);
+  return Math.min(Math.max(percent, 0), 100);
+}
+
+function shortText(value: string, fallback = '--'): string {
+  if (!value) return fallback;
+  return value;
 }
 
 export default function SubPage() {
-  const { t } = useTranslation();
-  const { isDark, isUltra, toggleTheme, toggleUltra, antdThemeConfig } = useTheme();
-  const [messageApi, messageContextHolder] = message.useMessage();
-  useEffect(() => { setMessageInstance(messageApi); }, [messageApi]);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [qrOpen, setQrOpen] = useState(false);
+  const [isDark, setIsDark] = useState(true);
 
-  const [isMobile, setIsMobile] = useState<boolean>(() => window.innerWidth < 576);
-  const [lang, setLang] = useState<string>(() => LanguageManager.getLanguage());
+  const mainLink = useMemo(() => getMainLink(), []);
+  const usagePercent = useMemo(() => getUsagePercent(), []);
+  const remainingText = useMemo(() => {
+    if (totalByte <= 0) return '∞';
+    return remained || '--';
+  }, []);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 576);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+    document.documentElement.classList.toggle('lunex-light', !isDark);
+    document.documentElement.classList.toggle('lunex-dark', isDark);
+  }, [isDark]);
 
-  const onLangChange = useCallback((next: string) => {
-    setLang(next);
-    LanguageManager.setLanguage(next);
-  }, []);
+  const copy = useCallback(
+    async (value: string, label = 'Copied') => {
+      if (!value) {
+        messageApi.warning('No link available');
+        return;
+      }
 
-  const cycleTheme = useCallback(() => {
-    pauseAnimationsUntilLeave('sub-theme-cycle');
-    if (!isDark) {
-      toggleTheme();
-      if (isUltra) toggleUltra();
-    } else if (!isUltra) {
-      toggleUltra();
-    } else {
-      toggleUltra();
-      toggleTheme();
-    }
-  }, [isDark, isUltra, toggleTheme, toggleUltra]);
+      const ok = await ClipboardManager.copyText(value);
 
-  const copy = useCallback(async (value: string) => {
-    if (!value) return;
-    const ok = await ClipboardManager.copyText(value);
-    if (ok) messageApi.success(t('copied'));
-  }, [t, messageApi]);
+      if (ok) {
+        messageApi.success(label);
+      } else {
+        messageApi.error('Copy failed');
+      }
+    },
+    [messageApi],
+  );
 
-  const open = useCallback((url: string) => {
+  const openUrl = useCallback((url: string) => {
     if (!url) return;
-    window.open(url, '_blank');
+    window.location.href = url;
   }, []);
 
-  const shadowrocketUrl = useMemo(() => {
-    if (!subUrl) return '';
-    const separator = subUrl.includes('?') ? '&' : '?';
-    const rawUrl = subUrl + separator + 'flag=shadowrocket';
-    const base64Url = btoa(rawUrl).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    const remark = encodeURIComponent(subTitle || sId || 'Subscription');
-    return `shadowrocket://add/sub/${base64Url}?remark=${remark}`;
-  }, []);
-
-  const v2boxUrl = useMemo(
-    () => `v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(sId)}`,
-    [],
-  );
-  const streisandUrl = useMemo(() => `streisand://import/${encodeURIComponent(subUrl)}`, []);
-  const happUrl = useMemo(() => `happ://add/${subUrl}`, []);
-
-  const pageClass = useMemo(() => {
-    const classes = ['subscription-page'];
-    if (isDark) classes.push('is-dark');
-    if (isUltra) classes.push('is-ultra');
-    return classes.join(' ');
-  }, [isDark, isUltra]);
-
-  const descriptionsItems = useMemo(() => {
-    const items = [
-      { key: 'subId', label: t('subscription.subId'), children: sId },
+  const androidItems: MenuProps['items'] = useMemo(
+    () => [
       {
-        key: 'status',
-        label: t('subscription.status'),
-        children: !enabled
-          ? <Tag color="red">{t('subscription.inactive')}</Tag>
-          : isUnlimited
-            ? <Tag color="purple">{t('subscription.unlimited')}</Tag>
-            : <Tag color={isActive ? 'green' : 'red'}>
-                {isActive ? t('subscription.active') : t('subscription.inactive')}
-              </Tag>,
+        key: 'v2rayng',
+        label: 'V2RayNG',
+        onClick: () => openUrl(`v2rayng://install-config?url=${encodeURIComponent(subUrl)}`),
       },
-      { key: 'down', label: t('subscription.downloaded'), children: download },
-      { key: 'up', label: t('subscription.uploaded'), children: upload },
-      { key: 'used', label: t('usage'), children: used },
-      { key: 'total', label: t('subscription.totalQuota'), children: total },
-    ];
-    if (totalByte > 0) {
-      items.push({ key: 'remained', label: t('remained'), children: remained });
-    }
-    items.push({
-      key: 'lastOnline',
-      label: t('lastOnline'),
-      children: lastOnlineMs > 0 ? IntlUtil.formatDate(lastOnlineMs, datepicker) : '-',
-    });
-    items.push({
-      key: 'expiry',
-      label: t('subscription.expiry'),
-      children: expireMs === 0
-        ? t('subscription.noExpiry')
-        : IntlUtil.formatDate(expireMs, datepicker),
-    });
-    return items;
-  }, [t]);
-
-  const androidMenuItems = useMemo(() => [
-    {
-      key: 'android-v2box',
-      label: 'V2Box',
-      onClick: () => open(`v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(sId)}`),
-    },
-    {
-      key: 'android-v2rayng',
-      label: 'V2RayNG',
-      onClick: () => open(`v2rayng://install-config?url=${encodeURIComponent(subUrl)}`),
-    },
-    { key: 'android-singbox', label: 'Sing-box', onClick: () => copy(subUrl) },
-    { key: 'android-v2raytun', label: 'V2RayTun', onClick: () => copy(subUrl) },
-    { key: 'android-npvtunnel', label: 'NPV Tunnel', onClick: () => copy(subUrl) },
-    { key: 'android-happ', label: 'Happ', onClick: () => open(`happ://add/${subUrl}`) },
-  ], [copy, open]);
-
-  const iosMenuItems = useMemo(() => [
-    { key: 'ios-shadowrocket', label: 'Shadowrocket', onClick: () => open(shadowrocketUrl) },
-    { key: 'ios-v2box', label: 'V2Box', onClick: () => open(v2boxUrl) },
-    { key: 'ios-streisand', label: 'Streisand', onClick: () => open(streisandUrl) },
-    { key: 'ios-v2raytun', label: 'V2RayTun', onClick: () => copy(subUrl) },
-    { key: 'ios-npvtunnel', label: 'NPV Tunnel', onClick: () => copy(subUrl) },
-    { key: 'ios-happ', label: 'Happ', onClick: () => open(happUrl) },
-  ], [copy, open, shadowrocketUrl, v2boxUrl, streisandUrl, happUrl]);
-
-  const langMenuItems = useMemo(
-    () => (LanguageManager.supportedLanguages as { value: string; name: string; icon: string }[]).map((l) => ({
-      key: l.value,
-      label: (
-        <Space size={8}>
-          <span aria-hidden="true">{l.icon}</span>
-          <span>{l.name}</span>
-        </Space>
-      ),
-    })),
-    [],
+      {
+        key: 'hiddify',
+        label: 'Hiddify',
+        onClick: () => openUrl(`hiddify://import/${encodeURIComponent(subUrl)}`),
+      },
+      {
+        key: 'v2box',
+        label: 'V2Box',
+        onClick: () =>
+          openUrl(
+            `v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(
+              subTitle || sId || 'Subscription',
+            )}`,
+          ),
+      },
+      {
+        key: 'copy',
+        label: 'Copy subscription link',
+        onClick: () => copy(subUrl || mainLink, 'Subscription copied'),
+      },
+    ],
+    [copy, mainLink, openUrl],
   );
 
-  const themeIcon = !isDark ? <SunOutlined /> : !isUltra ? <MoonOutlined /> : <MoonFilled />;
-
-  const cardTitle = (
-    <Space>
-      <span>{t('subscription.title')}</span>
-      <Tag>{sId}</Tag>
-    </Space>
-  );
-
-  const cardExtra = (
-    <Space size={8} align="center">
-      <Button
-        shape="circle"
-        size="large"
-        className="toolbar-btn"
-        aria-label={t('menu.theme')}
-        title={t('menu.theme')}
-        icon={themeIcon}
-        onClick={cycleTheme}
-      />
-      <Popover
-        rootClassName={isDark ? 'dark' : 'light'}
-        placement="bottomRight"
-        trigger="click"
-        styles={{ content: { padding: 4 } }}
-        content={
-          <Menu
-            mode="vertical"
-            selectable
-            selectedKeys={[lang]}
-            items={langMenuItems}
-            onClick={({ key }) => onLangChange(key)}
-            style={{ border: 'none', minWidth: 160 }}
-          />
-        }
-      >
-        <Button
-          shape="circle"
-          size="large"
-          className="toolbar-btn"
-          aria-label={t('pages.settings.language')}
-          icon={<TranslationOutlined />}
-        />
-      </Popover>
-    </Space>
+  const iosItems: MenuProps['items'] = useMemo(
+    () => [
+      {
+        key: 'shadowrocket',
+        label: 'Shadowrocket',
+        onClick: () => {
+          const rawUrl = subUrl.includes('?') ? `${subUrl}&flag=shadowrocket` : `${subUrl}?flag=shadowrocket`;
+          const base64Url = btoa(rawUrl).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          const remark = encodeURIComponent(subTitle || sId || 'Subscription');
+          openUrl(`shadowrocket://add/sub/${base64Url}?remark=${remark}`);
+        },
+      },
+      {
+        key: 'streisand',
+        label: 'Streisand',
+        onClick: () => openUrl(`streisand://import/${encodeURIComponent(subUrl)}`),
+      },
+      {
+        key: 'v2box',
+        label: 'V2Box',
+        onClick: () =>
+          openUrl(
+            `v2box://install-sub?url=${encodeURIComponent(subUrl)}&name=${encodeURIComponent(
+              subTitle || sId || 'Subscription',
+            )}`,
+          ),
+      },
+      {
+        key: 'copy',
+        label: 'Copy subscription link',
+        onClick: () => copy(subUrl || mainLink, 'Subscription copied'),
+      },
+    ],
+    [copy, mainLink, openUrl],
   );
 
   return (
-    <ConfigProvider theme={antdThemeConfig}>
-      {messageContextHolder}
-      <Layout className={pageClass}>
-        <Layout.Content className="content">
-          <Row justify="center">
-            <Col xs={24} sm={22} md={18} lg={14} xl={12}>
-              <Card hoverable className="subscription-card" title={cardTitle} extra={cardExtra}>
-                <Descriptions
-                  bordered
-                  column={1}
-                  size="small"
-                  className="info-table"
-                  items={descriptionsItems}
-                />
+    <main className="lunex-sub-page">
+      {contextHolder}
 
-                <SubUsageSummary
-                  usedByte={Number(subData.usedByte || 0)
-                    || (Number(subData.downloadByte || 0) + Number(subData.uploadByte || 0))}
-                  totalByte={totalByte}
-                  usedLabel={used}
-                  totalLabel={total}
-                  remainedLabel={remained}
-                  expireMs={expireMs}
-                  isActive={isActive}
-                />
+      <div className="lunex-stars" />
 
-                {(subUrl || subJsonUrl || subClashUrl) && (
-                  <>
-                    <Divider>{t('subscription.title')}</Divider>
-                    <div className="links-section">
-                      {subUrl && (
-                        <div className="sub-link-row">
-                          <Tag color="green" className="sub-link-tag">SUB</Tag>
-                          <a
-                            href={subUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="sub-link-title sub-link-anchor"
-                            title={subUrl}
-                          >
-                            {sId}
-                          </a>
-                          <div className="sub-link-actions">
-                            <Button size="small" icon={<CopyOutlined />} onClick={() => copy(subUrl)} aria-label={t('copy')} title={t('copy')} />
-                            <Popover
-                              trigger="click"
-                              placement="left"
-                              destroyOnHidden
-                              content={
-                                <div className="sub-link-qr-popover">
-                                  <Tag color="green" className="qr-tag">{t('pages.settings.subSettings')}</Tag>
-                                  <QRCode value={subUrl} size={QR_SIZE} type="svg" bordered={false} color="#000000" bgColor="#ffffff" />
-                                </div>
-                              }
-                            >
-                              <Button size="small" icon={<QrcodeOutlined />} aria-label="QR" title="QR" />
-                            </Popover>
-                          </div>
-                        </div>
-                      )}
-                      {subJsonUrl && (
-                        <div className="sub-link-row">
-                          <Tag color="purple" className="sub-link-tag">JSON</Tag>
-                          <a
-                            href={subJsonUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="sub-link-title sub-link-anchor"
-                            title={subJsonUrl}
-                          >
-                            {sId}
-                          </a>
-                          <div className="sub-link-actions">
-                            <Button size="small" icon={<CopyOutlined />} onClick={() => copy(subJsonUrl)} aria-label={t('copy')} title={t('copy')} />
-                            <Popover
-                              trigger="click"
-                              placement="left"
-                              destroyOnHidden
-                              content={
-                                <div className="sub-link-qr-popover">
-                                  <Tag color="purple" className="qr-tag">{t('pages.settings.subSettings')} JSON</Tag>
-                                  <QRCode value={subJsonUrl} size={QR_SIZE} type="svg" bordered={false} color="#000000" bgColor="#ffffff" />
-                                </div>
-                              }
-                            >
-                              <Button size="small" icon={<QrcodeOutlined />} aria-label="QR" title="QR" />
-                            </Popover>
-                          </div>
-                        </div>
-                      )}
-                      {subClashUrl && (
-                        <div className="sub-link-row">
-                          <Tooltip title="Clash / Mihomo">
-                            <Tag color="gold" className="sub-link-tag">CLASH</Tag>
-                          </Tooltip>
-                          <a
-                            href={subClashUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="sub-link-title sub-link-anchor"
-                            title={subClashUrl}
-                          >
-                            {sId}
-                          </a>
-                          <div className="sub-link-actions">
-                            <Button size="small" icon={<CopyOutlined />} onClick={() => copy(subClashUrl)} aria-label={t('copy')} title={t('copy')} />
-                            <Popover
-                              trigger="click"
-                              placement="left"
-                              destroyOnHidden
-                              content={
-                                <div className="sub-link-qr-popover">
-                                  <Tag color="gold" className="qr-tag">Clash / Mihomo</Tag>
-                                  <QRCode value={subClashUrl} size={QR_SIZE} type="svg" bordered={false} color="#000000" bgColor="#ffffff" />
-                                </div>
-                              }
-                            >
-                              <Button size="small" icon={<QrcodeOutlined />} aria-label="QR" title="QR" />
-                            </Popover>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
+      <button className="lunex-theme-btn" type="button" onClick={() => setIsDark((prev) => !prev)}>
+        <MoonFilled />
+        <span>{isDark ? 'Dark' : 'Light'}</span>
+      </button>
 
-                {links.length > 0 && (
-                  <>
-                    <Divider>{t('pages.inbounds.copyLink')}</Divider>
-                    <div className="links-section">
-                      {links.map((link, idx) => {
-                        const meta = parseLinkMeta(link, idx);
-                        const rowEmail = linkEmails[idx] || '';
-                        const rowTitle = trimEmail(meta.remark, rowEmail) || meta.remark;
-                        const qrLabel = rowEmail ? `${rowTitle}-${rowEmail}` : meta.remark;
-                        const canQr = !isPostQuantumLink(link);
-                        return (
-                          <div key={link} className="sub-link-row">
-                            <Tag
-                              color={PROTOCOL_COLORS[meta.protocol] ?? 'default'}
-                              className="sub-link-tag"
-                            >
-                              {meta.protocol}
-                            </Tag>
-                            <span className="sub-link-title" title={meta.remark}>
-                              {rowTitle}
-                            </span>
-                            <div className="sub-link-actions">
-                              <Button
-                                size="small"
-                                icon={<CopyOutlined />}
-                                onClick={() => copy(link)}
-                                aria-label={t('copy')}
-                                title={t('copy')}
-                              />
-                              {canQr && (
-                                <Popover
-                                  trigger="click"
-                                  placement="left"
-                                  destroyOnHidden
-                                  content={
-                                    <div className="sub-link-qr-popover">
-                                      <Tag
-                                        color={PROTOCOL_COLORS[meta.protocol] ?? 'default'}
-                                        className="qr-tag"
-                                      >
-                                        {qrLabel}
-                                      </Tag>
-                                      <QRCode
-                                        value={link}
-                                        size={220}
-                                        type="svg"
-                                        bordered={false}
-                                        color="#000000"
-                                        bgColor="#ffffff"
-                                      />
-                                    </div>
-                                  }
-                                >
-                                  <Button
-                                    size="small"
-                                    icon={<QrcodeOutlined />}
-                                    aria-label="QR"
-                                    title="QR"
-                                  />
-                                </Popover>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
+      <section className="lunex-hero">
+        <div className="lunex-shield-orb">
+          <div className="lunex-shield">
+            <ThunderboltFilled />
+          </div>
+        </div>
 
-                <Row gutter={[8, 8]} justify="center" className="apps-row">
-                  <Col xs={24} sm={12} className="app-col">
-                    <Dropdown trigger={['click']} menu={{ items: androidMenuItems }}>
-                      <Button block={isMobile} size="large" type="primary">
-                        <AndroidOutlined /> Android <DownOutlined />
-                      </Button>
-                    </Dropdown>
-                  </Col>
-                  <Col xs={24} sm={12} className="app-col">
-                    <Dropdown trigger={['click']} menu={{ items: iosMenuItems }}>
-                      <Button block={isMobile} size="large" type="primary">
-                        <AppleOutlined /> iOS <DownOutlined />
-                      </Button>
-                    </Dropdown>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-        </Layout.Content>
-      </Layout>
-    </ConfigProvider>
+        <h1>
+          Subscription <span>info</span>
+        </h1>
+
+        <button className="lunex-id-pill" type="button" onClick={() => copy(sId, 'ID copied')}>
+          <LinkOutlined />
+          <span>ID: {shortText(sId)}</span>
+        </button>
+      </section>
+
+      <section className="lunex-layout">
+        <div className="lunex-card lunex-plan-card">
+          <div className="lunex-section-title">
+            <CrownFilled />
+            <span>PLAN</span>
+          </div>
+
+          <div className="lunex-plan-box">
+            <div className="lunex-glow-dot" />
+            <div>
+              <h2>{getStatusText()}</h2>
+              <p>Subscription Plan</p>
+            </div>
+            <button type="button" onClick={() => copy(sId, 'Subscription ID copied')}>
+              {shortText(sId)}
+            </button>
+          </div>
+
+          <div className="lunex-section-title lunex-usage-title">
+            <LineChartOutlined />
+            <span>USAGE</span>
+          </div>
+
+          <div className="lunex-stats-grid">
+            <div className="lunex-stat-box">
+              <DownOutlined className="lunex-stat-icon" />
+              <div>
+                <span>DOWNLOADED</span>
+                <strong>{download}</strong>
+              </div>
+              <i />
+            </div>
+
+            <div className="lunex-stat-box">
+              <UpOutlined className="lunex-stat-icon" />
+              <div>
+                <span>UPLOADED</span>
+                <strong>{upload}</strong>
+              </div>
+              <i />
+            </div>
+
+            <div className="lunex-stat-box">
+              <PieChartOutlined className="lunex-stat-icon" />
+              <div>
+                <span>TOTAL USAGE</span>
+                <strong>{used}</strong>
+              </div>
+            </div>
+
+            <div className="lunex-stat-box">
+              <FolderOpenOutlined className="lunex-stat-icon" />
+              <div>
+                <span>TOTAL QUOTA</span>
+                <strong>{total}</strong>
+              </div>
+            </div>
+
+            <div className="lunex-stat-box">
+              <ClockCircleOutlined className="lunex-stat-icon" />
+              <div>
+                <span>LAST ONLINE</span>
+                <strong>{formatDate(lastOnlineMs)}</strong>
+              </div>
+            </div>
+
+            <div className="lunex-stat-box">
+              <CalendarOutlined className="lunex-stat-icon" />
+              <div>
+                <span>EXPIRY</span>
+                <strong>{expireMs === 0 ? '--' : formatDate(expireMs)}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="lunex-progress-panel">
+            <div
+              className="lunex-ring"
+              style={{
+                background: `conic-gradient(#9b5cff ${usagePercent * 3.6}deg, #4d4b67 0deg)`,
+              }}
+            >
+              <div>{usagePercent}%</div>
+            </div>
+
+            <div className="lunex-progress-info">
+              <h3>
+                <span>{used}</span> / {total} Used
+              </h3>
+              <div className="lunex-bar">
+                <span style={{ width: `${usagePercent}%` }} />
+              </div>
+              <div className="lunex-legend">
+                <span>
+                  <b className="used" /> Used
+                </span>
+                <span>
+                  <b className="remaining" /> Remaining
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="lunex-right">
+          <div className="lunex-card lunex-link-card">
+            <div className="lunex-section-title">
+              <ShareAltOutlined />
+              <span>SUBSCRIPTION ID</span>
+            </div>
+
+            <div className="lunex-link-top">
+              <strong>OUT-SEALED</strong>
+              <button type="button" onClick={() => copy(mainLink, 'Link copied')}>
+                <CopyOutlined />
+                Copy
+              </button>
+            </div>
+
+            <pre className="lunex-link-box" onClick={() => copy(mainLink, 'Link copied')}>
+              {shortText(mainLink)}
+            </pre>
+          </div>
+
+          <div className="lunex-card lunex-connect-card">
+            <div className="lunex-section-title">
+              <ShareAltOutlined />
+              <span>CONNECT</span>
+            </div>
+
+            <div className="lunex-connect-grid">
+              <Dropdown menu={{ items: androidItems }} trigger={['click']} placement="bottom">
+                <button type="button" className="lunex-os-btn">
+                  <AndroidFilled className="android" />
+                  <strong>Android</strong>
+                  <span>Tap to Connect</span>
+                </button>
+              </Dropdown>
+
+              <Dropdown menu={{ items: iosItems }} trigger={['click']} placement="bottom">
+                <button type="button" className="lunex-os-btn">
+                  <AppleFilled className="apple" />
+                  <strong>iOS</strong>
+                  <span>Tap to Connect</span>
+                </button>
+              </Dropdown>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="lunex-wide-card">
+        <div className="lunex-wide-left">
+          <div className="lunex-wide-icon">
+            <QrcodeOutlined />
+          </div>
+          <div>
+            <h3>Scan QR Code</h3>
+            <p>Scan this QR Code in your client</p>
+          </div>
+        </div>
+
+        <button type="button" onClick={() => setQrOpen(true)}>
+          <QrcodeOutlined />
+          Show QR Code
+        </button>
+      </section>
+
+      <section className="lunex-wide-card lunex-telegram-card">
+        <div className="lunex-wide-left">
+          <div className="lunex-wide-icon telegram">
+            <SendOutlined />
+          </div>
+          <div>
+            <h3>Contact on Telegram</h3>
+            <p>Need help? Contact us</p>
+          </div>
+        </div>
+
+        <button type="button" onClick={() => openUrl(`https://t.me/${telegramUsername}`)}>
+          <SendOutlined />
+          Message Me
+        </button>
+      </section>
+
+      <footer className="lunex-footer">
+        <span>Powered by</span>
+        <strong>{brandName}</strong>
+      </footer>
+
+      <Modal
+        title="Subscription QR Code"
+        open={qrOpen}
+        onCancel={() => setQrOpen(false)}
+        footer={null}
+        centered
+        className="lunex-qr-modal"
+      >
+        <div className="lunex-qr-wrap">
+          <QRCode value={mainLink || subUrl || sId || 'empty'} size={260} />
+          <button type="button" onClick={() => copy(mainLink || subUrl, 'QR link copied')}>
+            <CopyOutlined />
+            Copy Link
+          </button>
+        </div>
+      </Modal>
+    </main>
   );
 }
