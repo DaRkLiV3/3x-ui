@@ -1,0 +1,57 @@
+name: Build Custom 3x-ui
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - "sub/**"
+      - "web/**"
+      - "main.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/custom-build.yml"
+
+jobs:
+  build-linux-amd64:
+    name: Build Linux AMD64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci || npm install
+          npm run build
+
+      - name: Build x-ui binary
+        run: |
+          go mod download
+          go build -v -trimpath -ldflags="-s -w" -o x-ui main.go
+
+      - name: Check output
+        run: |
+          file x-ui
+          ls -lh x-ui
+
+      - name: Upload x-ui artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: x-ui-linux-amd64-custom
+          path: x-ui
+          if-no-files-found: error
