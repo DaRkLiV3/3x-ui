@@ -1114,3 +1114,282 @@ body,
   .lunex-os-btn span {
     font-size: 13px;
   }
+@media (max-width: 640px) {
+  .lunex-sub-page {
+    padding: 14px 8px 28px !important;
+  }
+
+  .lunex-theme-btn {
+    height: 36px !important;
+    padding: 0 12px !important;
+    font-size: 11px !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .lunex-hero {
+    padding-top: 4px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .lunex-shield-orb {
+    width: 92px !important;
+    height: 92px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .lunex-shield {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 22px !important;
+  }
+
+  .lunex-hero h1 {
+    font-size: 26px !important;
+    letter-spacing: -0.8px !important;
+  }
+
+  .lunex-id-pill {
+    max-width: 82vw !important;
+    margin-top: 12px !important;
+    padding: 7px 12px !important;
+    font-size: 10.5px !important;
+  }
+
+  .lunex-layout {
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 14px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .lunex-card {
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .lunex-right {
+    gap: 14px !important;
+  }
+
+  .lunex-section-title {
+    gap: 8px !important;
+    font-size: 10.5px !important;
+    letter-spacing: 1px !important;
+  }
+
+  .lunex-section-title svg {
+    font-size: 15px !important;
+  }
+
+  .lunex-plan-box {
+    margin-top: 14px !important;
+    padding: 12px !important;
+    gap: 8px !important;
+    border-radius: 13px !important;
+  }
+
+  .lunex-plan-box h2 {
+    font-size: 15px !important;
+  }
+
+  .lunex-plan-box p {
+    font-size: 10px !important;
+  }
+
+  .lunex-plan-box button {
+    height: 34px !important;
+    font-size: 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .lunex-usage-title {
+    margin-top: 22px !important;
+  }
+
+  .lunex-stats-grid {
+    gap: 9px !important;
+    margin-top: 14px !important;
+  }
+
+  .lunex-stat-box {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    min-height: 64px !important;
+    padding: 9px 10px !important;
+    gap: 8px !important;
+    border-radius: 11px !important;
+  }
+
+  .lunex-stat-icon {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-radius: 11px !important;
+    font-size: 21px !important;
+  }
+
+  .lunex-stat-icon svg {
+    width: 21px !important;
+    height: 21px !important;
+  }
+
+  .lunex-stat-box span {
+    margin-bottom: 4px !important;
+    font-size: 8.4px !important;
+    letter-spacing: 0.65px !important;
+  }
+
+  .lunex-stat-box strong {
+    font-size: 15px !important;
+  }
+
+  .lunex-stat-box i {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 7px !important;
+    height: 3px !important;
+  }
+
+  .lunex-progress-panel {
+    margin-top: 14px !important;
+    padding: 10px !important;
+    gap: 12px !important;
+    min-height: auto !important;
+  }
+
+  .lunex-ring {
+    width: 78px !important;
+    height: 78px !important;
+  }
+
+  .lunex-ring div {
+    width: 54px !important;
+    height: 54px !important;
+    font-size: 18px !important;
+  }
+
+  .lunex-progress-info h3 {
+    margin-bottom: 10px !important;
+    font-size: 13px !important;
+  }
+
+  .lunex-bar {
+    height: 6px !important;
+  }
+
+  .lunex-legend {
+    gap: 12px !important;
+    margin-top: 10px !important;
+    font-size: 11px !important;
+  }
+
+  .lunex-link-card,
+  .lunex-connect-card {
+    min-height: auto !important;
+  }
+
+  .lunex-link-top {
+    margin-top: 18px !important;
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+
+  .lunex-link-top strong {
+    font-size: 10.5px !important;
+  }
+
+  .lunex-link-top button,
+  .lunex-wide-card > button,
+  .lunex-telegram-card > button {
+    min-height: 34px !important;
+    padding: 0 10px !important;
+    font-size: 10.5px !important;
+    border-radius: 10px !important;
+  }
+
+  .lunex-config-list {
+    gap: 12px !important;
+  }
+
+  .lunex-config-head {
+    padding: 10px !important;
+    gap: 10px !important;
+  }
+
+  .lunex-config-head strong {
+    font-size: 11px !important;
+  }
+
+  .lunex-config-head button {
+    min-height: 30px !important;
+    padding: 0 9px !important;
+    font-size: 10.5px !important;
+  }
+
+  .lunex-link-box {
+    min-height: 68px !important;
+    max-height: 104px !important;
+    padding: 11px !important;
+    font-size: 10px !important;
+    line-height: 1.55 !important;
+  }
+
+  .lunex-connect-grid {
+    gap: 10px !important;
+    margin-top: 18px !important;
+  }
+
+  .lunex-os-btn {
+    min-height: 118px !important;
+    border-radius: 12px !important;
+  }
+
+  .lunex-os-btn svg {
+    font-size: 34px !important;
+  }
+
+  .lunex-os-btn strong {
+    margin-top: 8px !important;
+    font-size: 14px !important;
+  }
+
+  .lunex-os-btn span {
+    font-size: 10.5px !important;
+  }
+
+  .lunex-wide-card {
+    gap: 14px !important;
+    margin-bottom: 14px !important;
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .lunex-wide-left {
+    gap: 12px !important;
+  }
+
+  .lunex-wide-icon {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 15px !important;
+    font-size: 24px !important;
+  }
+
+  .lunex-wide-card h3 {
+    margin-bottom: 4px !important;
+    font-size: 14px !important;
+  }
+
+  .lunex-wide-card p {
+    font-size: 10.5px !important;
+  }
+
+  .lunex-footer {
+    margin-top: 22px !important;
+    font-size: 11px !important;
+  }
+
+  .lunex-footer strong {
+    font-size: 13px !important;
+  }
+}
