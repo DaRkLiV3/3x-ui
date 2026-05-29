@@ -56,14 +56,15 @@ body,
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.85;
+  opacity: 0.9;
   background-image:
-    radial-gradient(circle, rgba(178, 141, 255, 0.78) 0 1.2px, transparent 1.8px),
-    radial-gradient(circle, rgba(178, 141, 255, 0.38) 0 0.95px, transparent 1.35px);
+    radial-gradient(circle, rgba(178, 141, 255, 0.85) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle, rgba(178, 141, 255, 0.45) 0 0.95px, transparent 1.35px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.45) 0 0.85px, transparent 1.25px);
   background-repeat: repeat;
-  background-size: 220px 220px, 360px 360px;
-  background-position: 30px 110vh, 130px 140vh;
-  animation: lunexStarsRiseA 150s linear infinite;
+  background-size: 150px 150px, 230px 230px, 310px 310px;
+  background-position: 30px 110vh, 130px 140vh, 70px 125vh;
+  animation: lunexStarsRiseA 100s linear infinite;
   will-change: background-position;
 }
 
@@ -78,22 +79,24 @@ body,
 }
 
 .lunex-stars::before {
-  opacity: 0.42;
+  opacity: 0.5;
   background-image:
-    radial-gradient(circle, rgba(123, 201, 255, 0.42) 0 1.05px, transparent 1.45px),
-    radial-gradient(circle, rgba(212, 170, 255, 0.34) 0 1.15px, transparent 1.55px);
-  background-size: 280px 280px, 430px 430px;
-  background-position: 90px 125vh, 15px 155vh;
-  animation: lunexStarsRiseB 185s linear infinite;
+    radial-gradient(circle, rgba(123, 201, 255, 0.5) 0 1.05px, transparent 1.45px),
+    radial-gradient(circle, rgba(212, 170, 255, 0.42) 0 1.15px, transparent 1.55px),
+    radial-gradient(circle, rgba(169, 88, 255, 0.38) 0 0.9px, transparent 1.35px);
+  background-size: 190px 190px, 270px 270px, 390px 390px;
+  background-position: 90px 125vh, 15px 155vh, 160px 135vh;
+  animation: lunexStarsRiseB 123s linear infinite;
 }
 
 .lunex-stars::after {
-  opacity: 0.24;
+  opacity: 0.32;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.75) 0 1.35px, transparent 1.85px);
-  background-size: 520px 520px;
-  background-position: 180px 135vh;
-  animation: lunexStarsRiseC 230s linear infinite;
+    radial-gradient(circle, rgba(255, 255, 255, 0.78) 0 1.25px, transparent 1.8px),
+    radial-gradient(circle, rgba(178, 141, 255, 0.42) 0 0.9px, transparent 1.3px);
+  background-size: 340px 340px, 460px 460px;
+  background-position: 180px 135vh, 40px 160vh;
+  animation: lunexStarsRiseC 153s linear infinite;
 }
 
 .lunex-theme-btn {
@@ -204,6 +207,11 @@ body,
 .lunex-shield svg {
   position: relative;
   z-index: 2;
+  animation:
+    lunexBoltFloat 2.6s ease-in-out infinite,
+    lunexBoltGlow 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.55));
+  transform-origin: center;
 }
 
 .lunex-hero h1 {
@@ -279,16 +287,16 @@ body,
 .lunex-section-title {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   color: #a96aff;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 900;
-  letter-spacing: 1.7px;
+  letter-spacing: 1.45px;
   text-transform: uppercase;
 }
 
 .lunex-section-title svg {
-  font-size: 21px;
+  font-size: 18px;
 }
 
 .lunex-plan-box {
@@ -390,17 +398,17 @@ body,
 
 .lunex-stat-box span {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   color: var(--lunex-muted);
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 900;
-  letter-spacing: 1.1px;
+  letter-spacing: 0.95px;
 }
 
 .lunex-stat-box strong {
   display: block;
   color: var(--lunex-text);
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1;
   font-weight: 950;
   overflow: hidden;
@@ -796,28 +804,28 @@ body,
 }
 @keyframes lunexStarsRiseA {
   from {
-    background-position: 30px 110vh, 130px 140vh;
+    background-position: 30px 110vh, 130px 140vh, 70px 125vh;
   }
   to {
-    background-position: 30px -110vh, 130px -140vh;
+    background-position: 30px -110vh, 130px -140vh, 70px -125vh;
   }
 }
 
 @keyframes lunexStarsRiseB {
   from {
-    background-position: 90px 125vh, 15px 155vh;
+    background-position: 90px 125vh, 15px 155vh, 160px 135vh;
   }
   to {
-    background-position: 90px -125vh, 15px -155vh;
+    background-position: 90px -125vh, 15px -155vh, 160px -135vh;
   }
 }
 
 @keyframes lunexStarsRiseC {
   from {
-    background-position: 180px 135vh;
+    background-position: 180px 135vh, 40px 160vh;
   }
   to {
-    background-position: 180px -135vh;
+    background-position: 180px -135vh, 40px -160vh;
   }
 }
 
@@ -852,6 +860,32 @@ body,
     box-shadow:
       0 0 42px rgba(140, 83, 255, 0.7),
       inset 0 0 20px rgba(255, 255, 255, 0.12);
+  }
+}
+@keyframes lunexBoltFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  35% {
+    transform: translateY(-3px) scale(1.08) rotate(-4deg);
+  }
+  65% {
+    transform: translateY(2px) scale(0.98) rotate(4deg);
+  }
+}
+
+@keyframes lunexBoltGlow {
+  0%,
+  100% {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.45));
+  }
+  50% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 12px rgba(255, 255, 255, 0.85))
+      drop-shadow(0 0 22px rgba(169, 88, 255, 0.75));
   }
 }
 
@@ -982,3 +1016,101 @@ body,
     width: 100%;
   }
 }
+  .lunex-sub-page {
+    padding: 18px 10px 36px;
+  }
+
+  .lunex-layout {
+    width: 100%;
+    max-width: 100%;
+    gap: 18px;
+  }
+
+  .lunex-card {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .lunex-hero h1 {
+    font-size: 32px;
+    letter-spacing: -1px;
+  }
+
+  .lunex-id-pill {
+    max-width: 88vw;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .lunex-plan-box {
+    padding: 15px;
+    gap: 10px;
+  }
+
+  .lunex-plan-box h2 {
+    font-size: 17px;
+  }
+
+  .lunex-plan-box p {
+    font-size: 11px;
+  }
+
+  .lunex-plan-box button {
+    height: 40px;
+    font-size: 11px;
+  }
+
+  .lunex-stats-grid {
+    gap: 12px;
+  }
+
+  .lunex-progress-panel {
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .lunex-progress-info h3 {
+    font-size: 15px;
+  }
+
+  .lunex-link-top {
+    padding: 12px;
+  }
+
+  .lunex-link-top strong {
+    font-size: 12px;
+  }
+
+  .lunex-link-top button,
+  .lunex-wide-card > button,
+  .lunex-telegram-card > button {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+
+  .lunex-link-box {
+    font-size: 11px;
+    line-height: 1.65;
+    padding: 14px;
+  }
+
+  .lunex-connect-grid {
+    gap: 12px;
+  }
+
+  .lunex-os-btn {
+    min-height: 150px;
+  }
+
+  .lunex-os-btn svg {
+    font-size: 44px;
+  }
+
+  .lunex-os-btn strong {
+    font-size: 17px;
+  }
+
+  .lunex-os-btn span {
+    font-size: 13px;
+  }
